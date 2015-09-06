@@ -1,0 +1,18 @@
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.views.generic import ListView
+from app.models import Conversation
+from app.models import Speaker
+from app.models import DialogueBlock
+
+# Create your views here.
+'''def hello_world(request):
+	return HttpResponse("hello")
+
+def results(request, speaker_id):
+	return HttpResponse("This is the content of speaker %s." %speaker_id)'''
+
+class ListResultsView(ListView):
+
+	model = DialogueBlock
+

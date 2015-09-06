@@ -1,0 +1,96 @@
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.views.generic import ListView
+from app.models import Conversation
+from app.models import Speaker
+from app.models import DialogueBlock
+from features import mfcc
+from features import logfbank
+import scipy.io.wavfile as wav
+import numpy as np
+from sklearn.cluster import KMeans
+import nltk
+import subprocess
+
+# Create your views here.
+'''def hello_world(request):
+	return HttpResponse("hello")
+
+def results(request, speaker_id):
+	return HttpResponse("This is the content of speaker %s." %speaker_id)'''
+
+class ListResultsView(ListView):
+
+	model = DialogueBlock
+
+
+def fbank_feature_extractor():
+    '''
+    Extracts mfcc features for the wav file
+    '''
+
+    # Extracts mfcc features every 1/200th of a second.
+    wav_file_path = '/home/trump_megyn.wav'
+    (rate, sig) = wav.read(wav_file_path)
+    fbank_feat = logfbank(sig, rate)
+
+    #Subsample mfcc features to 1/10th of a second.
+    fbank_feat = np.array([x for ind, x in enumerate(fbank_feat) if ind % 10 == 0])
+
+    return fbank_feat
+
+def mfcc_feature_extractor():
+    '''
+    Extracts mfcc features for the wav file
+    '''
+
+    # Extracts mfcc features every 1/200th of a second.
+    wav_file_path = '/home/trump_megyn.wav'
+    (rate, sig) = wav.read(wav_file_path)
+    mfcc_feat = mfcc(sig, rate)
+
+    #Subsample mfcc features to 1/10th of a second.
+    mfcc_feat = np.array([x for ind, x in enumerate(mfcc_feat) if ind % 10 == 0])
+
+    return mfcc_feat
+
+
+def gmm_clustering(num_cluster=2, features):
+    '''
+    Clusters the mfcc features into a pre-set number of clusters
+    '''
+
+    RESOLUTION_SIZE = 200
+
+    #Initialized and train GMM
+
+    kmeans = KMeans(n_clusters=num_cluster)
+    kmeans.fit(features)
+    labels = kmeans.labels_
+    speaker_labels = []
+    prev_i = 0
+
+    #Assign speaker labels
+    for i in range(0, len(features), RESOLUTION_SIZE):
+        labels_in_window = labels[prev_i:i]
+        speaker_labels.append(sorted(nltk.FreqDist(labels_in_window).items(), key=lambda x:x[1], reverse=True)[0][0])
+        prev_i = i
+
+    return speaker_labels[1:]
+
+def get_asr_transcript(file_path):
+
+    file_path = '@' + file_path
+
+    subprocess.call([
+        'curl',
+        '-k',
+        '-u',
+        '8ba36e4f-b5dd-45a7-8e67-8a59a5eca217:Dr2uog1CcnIv',
+        '--limit-rate 40000',
+        '--header "Content-Type: audio/flac"',
+        '--header "Transfer-Encoding: chunked"',
+        '--data-binary ' + file_path,
+        '"https://stream.watsonplatform.net/speech-to-text/api/v1/recognize?continuous=true'
+        '&timestamps=true&max_alternatives=1"'
+    ])

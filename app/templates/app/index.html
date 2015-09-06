@@ -1,0 +1,38 @@
+<html>
+<style type ="text/css">
+table {
+}
+body {
+background-color:"green";
+}
+</style>
+<table>
+    <tr>
+        <th>Field 1</th>
+        ...
+        <th>Field N</th>
+    </tr>
+    {% for item in query_results %}
+    <tr> 
+        <td>{{ item.field1 }}</td>
+        ...
+        <td>{{ item.fieldN }}</td>
+    </tr>
+    {% endfor %}
+</table><table>
+    <tr>
+        <th>Field 1</th>
+        ...
+        <th>Field N</th>
+    </tr>
+    {% for item in query_results %}
+    <tr> 
+        <td>{{ item.field1 }}</td>
+        ...
+        <td>{{ item.fieldN }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<b>Person who spoke the most: </b>{{ speaker_max }}<br/>
+<b>Person who spoke the least: </b>{{ speaker_min }}<br/>
+</html>
