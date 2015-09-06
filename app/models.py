@@ -5,6 +5,7 @@ from django.db import models
 class Conversation(models.Model):
     date = models.DateTimeField(auto_now_add=True, db_index=True)
     duration = models.IntegerField(db_index=True)
+    name = models.TextField()
     
     def __unicode__(self):
         return "Conversation created at %s" % (self.date)
@@ -14,6 +15,8 @@ class DialogueBlock(models.Model):
     position = models.IntegerField(db_index=True)
     conversation = models.ForeignKey(Conversation, db_index=True)
     speaker = models.TextField()
+    start_time = models.FloatField(db_index=True)
+    end_time = models.FloatField(db_index=True)
 
     def __unicode__(self):
         return "%s -> %s, speaker id = %s id = %s" %(self.position, self.content, self.speaker, self.conversation.id)
